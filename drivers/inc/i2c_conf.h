@@ -19,7 +19,7 @@
     #endif
 
 	#define USE_I2C1
-	#define USE_I2C2
+	//#define USE_I2C2
 
 	#define USE_TX_RX_IN_MASTER_MODE		/* use Rx, Tx bits for master mode for each I2C model (if defined - use it (by default))  */
 

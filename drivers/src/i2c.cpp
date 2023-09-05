@@ -159,7 +159,7 @@ void I2C::stop () {
 bool I2C::sendAddress (uint16_t slaveAddr, uint16_t regAddr, bool isMasterTransmiter = true) {
 	uint16_t tmp;
 
-	if( READ_BIT(i2cType->OAR1, I2C2_OAR1_ADDR_MODE)){
+	if (READ_BIT(i2cType->OAR1, I2C_OAR1_ADDMODE)) {
 		//10-bit address slave
 		tmp = ((slaveAddr & 0x0300) >> 7) & 0xF6;
 		WRITE_REG(i2cType->DR, tmp);
