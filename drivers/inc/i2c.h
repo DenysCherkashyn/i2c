@@ -1,3 +1,16 @@
+/*
+ * 	i2c.h
+ *
+ *	Created on: 03 September 2023
+ *      Author: D.Cherkashin
+ *
+ *      General i2c driver header file.
+ *      Defines class attributes and methods.
+ *      Defines file include for definite stm32 controller type
+ *      For more information see readme.md file
+ *
+ */
+
 #ifndef _I2C_H_
 	#define _I2C_H_
 
@@ -40,6 +53,7 @@
 			static ConnectionMap connections;
 			I2C_TypeDef * i2cType;
 			uint32_t CR1LastState;
+			bool isMasterEmergencyStop;
 			bool isSlaveActive;
 			bool isSlaveWrongRegAddr;
 			uint8_t slaveBuffCounter;
@@ -77,6 +91,7 @@
 			bool isStoped();
 			bool isMasterWrite();
 			bool isMasterRead();
+			bool isMasterEmergencyStopped();
 			bool isSlaveWrite();
 			bool isSlaveRead();
 
@@ -84,6 +99,7 @@
 			void masterWrite(uint16_t, uint8_t*, uint8_t);
 			void masterRead(uint16_t, uint16_t, uint8_t*, uint8_t);
 			void masterRead(uint16_t, uint8_t*, uint8_t);
+			void masterEmergencyStop();
 
 			void slaveWrite(uint8_t*, uint8_t, bool);
 			void slaveWrite(uint8_t*, bool);
@@ -91,6 +107,8 @@
 			void slaveRead(uint8_t*, bool);
 			void slaveReadWrite(uint8_t*, uint8_t, bool);
 			void slaveReadWrite(std::unordered_map<uint8_t, uint8_t*>*,  uint8_t, bool);
+			void slaveReadWrite(uint8_t*, bool);
+			void slaveReadWrite(std::unordered_map<uint8_t, uint8_t*>*,  bool);
 	};
 
 #endif /* _I2C_H_ */

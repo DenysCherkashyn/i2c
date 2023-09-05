@@ -1,3 +1,15 @@
+/*
+ * 	i2c.cpp
+ *
+ *	Created on: 03 September 2023
+ *      Author: D.Cherkashin
+ *
+ *      This i2c-driver class for work in STM32 controllers (f1xx-series).
+ *      For more information see readme.md file
+ *
+ */
+
+
 #include "i2c.h"
 
 /*****************************************
@@ -14,6 +26,7 @@ I2C::I2C(I2C_TypeDef * i2cType, I2C_Cfg_TypeDef* i2cCfg){
 	this->i2cType = i2cType;
 	gpioInit(i2cType);
 	i2cInit(i2cType, i2cCfg);
+	isMasterEmergencyStop = false;
 	isSlaveActive = false;
 	isSlaveWrongRegAddr = false;
 	slaveBuffCounter = 0;
@@ -138,6 +151,7 @@ void I2C::start () {
 }
 
 void I2C::stop () {
+	isMasterEmergencyStop = false;
 	SET_BIT(i2cType->CR1, I2C_CR1_STOP);
 	delay();
 }
@@ -182,13 +196,19 @@ bool I2C::sendAddress (uint16_t slaveAddr, uint16_t regAddr, bool isMasterTransm
 }
 
 bool I2C::pushDataByte (uint8_t data) {
-	if( isFailures() ) return false;
+    #ifdef	USE_TX_RX_IN_MASTER_MODE
+	    while (!IS_BIT_SET(i2cType->SR1, I2C_SR1_TXE) && !isMasterEmergencyStop){};
+    #endif
+	if( isFailures() || isMasterEmergencyStop) return false;
 	WRITE_REG(i2cType->DR, data);
 	return true;
 }
 
 bool I2C::pullDataByte (uint8_t* buff) {
-	if( isFailures() ) return false;
+#ifdef	USE_TX_RX_IN_MASTER_MODE
+	    while (!IS_BIT_SET(i2cType->SR1, I2C_SR1_RXNE) && !isMasterEmergencyStop){};
+#endif
+	if( isFailures() || isMasterEmergencyStop) return false;
 	*buff = (uint8_t)READ_REG(i2cType->DR);
 	return true;
 }
@@ -331,6 +351,10 @@ bool I2C::isMasterRead () {
 	return ( IS_BIT_SET(i2cType->SR2, I2C_SR2_MSL) && !IS_BIT_SET(i2cType->SR2, I2C_SR2_TRA) ) ? true : false;
 }
 
+bool I2C::isMasterEmergencyStopped () {
+	return (isMasterEmergencyStop) ? true : false;
+}
+
 bool I2C::isSlaveWrite () {
 	return ( !IS_BIT_SET(i2cType->SR2, I2C_SR2_MSL) && IS_BIT_SET(i2cType->SR2, I2C_SR2_TRA) ) ? true : false;
 }
@@ -346,7 +370,7 @@ void I2C::masterWrite (uint16_t slaveAddr, uint16_t regAddr, uint8_t* buff, uint
 	setMasterConnection (slaveAddr, regAddr, true);
 	tmp = buff;
 	i=0;
-	while ( (i < dataSize) && pushDataByte(*tmp) ) {
+	while ( (i < dataSize) && pushDataByte(*tmp) && !isMasterEmergencyStop) {
 		++i;
 		++tmp;
 		delay();
@@ -368,7 +392,7 @@ void I2C::masterRead (uint16_t slaveAddr, uint16_t regAddr, uint8_t* buff, uint8
 	tmp = buff;
 	i=2;
 	delay();
-	while ( dataSize>0 ) {
+	while ( dataSize>0 && !isMasterEmergencyStop ) {
 	    if( !(i < dataSize) && !(NACKisSet) ) {
 		//sending NACK with the last byte
 		CLEAR_BIT(i2cType->CR1, I2C_CR1_ACK);
@@ -386,7 +410,11 @@ void I2C::masterRead (uint16_t slaveAddr, uint8_t* buff, uint8_t dataSize) {
     masterRead (slaveAddr, 0xffff, buff, dataSize);
 }
 
-void I2C::slaveWrite(uint8_t *buff, uint8_t dataSize,  bool doOneCycle = false){
+void I2C::masterEmergencyStop () {
+    isMasterEmergencyStop = true;
+}
+
+void I2C::slaveWrite (uint8_t *buff, uint8_t dataSize,  bool doOneCycle = false){
     while (isSlaveWrite()) {
 	if( !isSetSlaveConnection(buff) )return;
 	WRITE_REG(i2cType->DR, *slaveBuffPointer);
@@ -401,11 +429,11 @@ void I2C::slaveWrite(uint8_t *buff, uint8_t dataSize,  bool doOneCycle = false){
     };
 }
 
-void I2C::slaveWrite(uint8_t *buff,  bool doOneCycle = false){
+void I2C::slaveWrite (uint8_t *buff,  bool doOneCycle = false) {
 	slaveWrite(buff,1,doOneCycle);
 }
 
-void I2C::slaveRead(uint8_t *buff, uint8_t dataSize, bool doOneCycle = false){
+void I2C::slaveRead (uint8_t *buff, uint8_t dataSize, bool doOneCycle = false) {
     if (isSlaveRead()) {
 	if( !isSetSlaveConnection(buff) )return;
 	*slaveBuffPointer = READ_REG(i2cType->DR);
@@ -420,11 +448,11 @@ void I2C::slaveRead(uint8_t *buff, uint8_t dataSize, bool doOneCycle = false){
     };
 }
 
-void I2C::slaveRead(uint8_t *buff,  bool doOneCycle = false){
+void I2C::slaveRead (uint8_t *buff,  bool doOneCycle = false) {
     slaveRead(buff, 1, doOneCycle);
 }
 
-void I2C::slaveReadWrite(uint8_t *buff, uint8_t dataSize, bool doOneCycle = false){
+void I2C::slaveReadWrite (uint8_t *buff, uint8_t dataSize, bool doOneCycle = false) {
     if(dataSize<1) dataSize = 1;
     while (isSetSlaveConnection(buff)) {
    	if (isSlaveWrite()) {
@@ -444,9 +472,9 @@ void I2C::slaveReadWrite(uint8_t *buff, uint8_t dataSize, bool doOneCycle = fals
 
    	if (doOneCycle) return;
     };
-}
+};
 
-void I2C::slaveReadWrite(std::unordered_map<uint8_t, uint8_t*>* buff,  uint8_t dataSize, bool doOneCycle = false) {
+void I2C::slaveReadWrite (std::unordered_map<uint8_t, uint8_t*>* buff,  uint8_t dataSize, bool doOneCycle = false) {
     if(dataSize<1) dataSize = 1;
     while (isSetSlaveConnection(buff)) {
 	if (isSlaveWrite()) {
@@ -470,4 +498,12 @@ void I2C::slaveReadWrite(std::unordered_map<uint8_t, uint8_t*>* buff,  uint8_t d
 
 	if (doOneCycle) return;
     };
-}
+};
+
+void I2C::slaveReadWrite (uint8_t *buff, bool doOneCycle = false) {
+    slaveReadWrite(buff, 1, doOneCycle);
+};
+
+void I2C::slaveReadWrite (std::unordered_map<uint8_t, uint8_t*>* buff, bool doOneCycle = false) {
+    slaveReadWrite(buff, 1, doOneCycle);
+};

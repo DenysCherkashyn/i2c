@@ -45,7 +45,7 @@ extern "C" void I2C2_EV_IRQHandler(void)
     //i2c->slaveReadWrite(&i2c_buff_it, 1, true);
     //i2c->slaveWrite(&i2c_buff_it, 1, true);
    // i2c->slaveRead(r_data, 1, true);
-   // i2c->slaveWrite(&r_data[2], 1, true);
+  // i2c->slaveWrite(&r_data[2], 1, true);
     i2c->slaveReadWrite(r_data,1,true);
    // i2c_buff_pointer = (i2c_buff_pointer>0) ? (i2c_buff_pointer-1) : (*(&i2c_buff_it + 1) - i2c_buff_it);
 }
@@ -61,7 +61,6 @@ int main(void)
 	i2c_buff_it[3] = &r_data[2];
 	i2c_buff_it[4] = &r_data[3];
 	r_data[2] = 0b01110111;
-      //  uint8_t k=*(i2c_buff_it[3]);
 	i2c = I2C::getInstance(I2C2);
 	NVIC_EnableIRQ(I2C2_EV_IRQn);
 	__enable_irq();

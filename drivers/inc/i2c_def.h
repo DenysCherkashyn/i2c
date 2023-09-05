@@ -1,5 +1,17 @@
+/*
+ * 	i2c_def.h
+ *
+ *	Created on: 03 September 2023
+ *      Author: D.Cherkashin
+ *
+ *      i2c driver definitions header file.
+ *      Contains main defenitions for driver class.
+ *      For more information see readme.md file
+ *
+ */
+
 #ifndef _I2C_DEF_H_
-#define _I2C_DEF_H_
+    #define _I2C_DEF_H_
 
     #ifdef __cplusplus
 		 extern "C" {
