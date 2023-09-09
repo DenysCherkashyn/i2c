@@ -130,6 +130,18 @@ uint8_t dataSize - size of data to write
 Return: void
 	
 /****************************************************************************/
+masterWriteControlled (uint16_t slaveAddr, uint8_t* buff)
+-----------------------------------------------------------------------------
+- sets i2c-connection in master write mode and transmit 1 data byte per one execution cycle without termination i2c-connection while buff != nullptr. Sets connection with slave device on slaveAddr-address
+and writes datasize bytes data from buff to slave device (without regAddr register address transfering). Stops i2c-connection when buff == nullptr or if isMasterEmergencyStop == true. 
+Runs in the current process thread, does not need to use interrupts.
+
+Parameters:
+uint16_t slaveAddr - slave address
+uint8_t* buff - data source pointer	(size of 1 byte)	
+Return: void
+	
+/****************************************************************************/
 masterRead (uint16_t slaveAddr, uint16_t regAddr, uint8_t* buff, uint8_t dataSize)
 -----------------------------------------------------------------------------
 - sets i2c-connection in master read mode. Sets connection with slave device on slaveAddr-address

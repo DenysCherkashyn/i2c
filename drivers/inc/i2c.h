@@ -73,7 +73,7 @@
 			bool sendAddress(uint16_t, uint16_t, bool);
 			bool pushDataByte(uint8_t);
 			bool pullDataByte(uint8_t*);
-			void delay();
+			void delay_us(uint32_t);
 			bool isAddressBitSet();
 			void setMasterConnection(uint16_t, uint16_t, bool);
 			bool isSetSlaveConnection(uint8_t*);
@@ -97,6 +97,7 @@
 
 			void masterWrite(uint16_t, uint16_t, uint8_t*, uint8_t);
 			void masterWrite(uint16_t, uint8_t*, uint8_t);
+			void masterWriteControlled(uint16_t, uint8_t*);
 			void masterRead(uint16_t, uint16_t, uint8_t*, uint8_t);
 			void masterRead(uint16_t, uint8_t*, uint8_t);
 			void masterEmergencyStop();

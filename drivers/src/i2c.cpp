@@ -153,7 +153,7 @@ void I2C::start () {
 void I2C::stop () {
 	isMasterEmergencyStop = false;
 	SET_BIT(i2cType->CR1, I2C_CR1_STOP);
-	delay();
+	delay_us(10);
 }
 
 bool I2C::sendAddress (uint16_t slaveAddr, uint16_t regAddr, bool isMasterTransmiter = true) {
@@ -184,19 +184,19 @@ bool I2C::sendAddress (uint16_t slaveAddr, uint16_t regAddr, bool isMasterTransm
 		tmp = (isMasterTransmiter) ? ((slaveAddr << 1) & 0xFE) : ((slaveAddr << 1) | 0x01);
 		WRITE_REG(i2cType->DR, tmp);
 	};
-	delay();
+	delay_us(10);
 	READ_REG(i2cType->SR1);
 	READ_REG(i2cType->SR2);
 	//send slave register address
 	if(regAddr>=0 && regAddr<0x0100){
 	    WRITE_REG(i2cType->DR, 0x00FF & regAddr);
-	    delay();
+	    delay_us(10);
 	};
 	return true;
 }
 
 bool I2C::pushDataByte (uint8_t data) {
-    #ifdef	USE_TX_RX_IN_MASTER_MODE
+    #ifdef USE_TX_RX_IN_MASTER_MODE
 	    while (!IS_BIT_SET(i2cType->SR1, I2C_SR1_TXE) && !isMasterEmergencyStop){};
     #endif
 	if( isFailures() || isMasterEmergencyStop) return false;
@@ -213,10 +213,9 @@ bool I2C::pullDataByte (uint8_t* buff) {
 	return true;
 }
 
-void I2C::delay() {
-    for(uint8_t i = 0; i<100; i++ ){
-	__NOP();
-    };
+void I2C::delay_us(uint32_t us) {
+    us *= (SystemCoreClock/1000000);
+    while(us>0) --us;
 }
 
 bool I2C::isAddressBitSet () {
@@ -232,7 +231,7 @@ void I2C::setMasterConnection (uint16_t slaveAddr, uint16_t regAddr, bool isMast
     if(regAddr>=0 && regAddr<0x0100) {
 	sendAddress(slaveAddr, regAddr, true);	//master-transmitter
 	SET_BIT(i2cType->CR1, I2C_CR1_START);
-	delay();
+	delay_us(10);
     };
     sendAddress(slaveAddr, 0xffff, isMasterTransmiter);
 }
@@ -373,13 +372,22 @@ void I2C::masterWrite (uint16_t slaveAddr, uint16_t regAddr, uint8_t* buff, uint
 	while ( (i < dataSize) && pushDataByte(*tmp) && !isMasterEmergencyStop) {
 		++i;
 		++tmp;
-		delay();
+		delay_us(10);
 	};
 	stop();
 }
 
 void I2C::masterWrite (uint16_t slaveAddr, uint8_t* buff, uint8_t dataSize) {
 	masterWrite(slaveAddr, 0xffff, buff, dataSize);}
+
+void I2C::masterWriteControlled (uint16_t slaveAddr, uint8_t* buff) {
+    if(!isMasterWrite()) {
+	setMasterConnection (slaveAddr, 0xffff, true);
+    };
+    if(buff==nullptr || !pushDataByte(*buff)) {
+	stop();
+    };
+}
 
 void I2C::masterRead (uint16_t slaveAddr, uint16_t regAddr, uint8_t* buff, uint8_t dataSize) {
 	bool NACKisSet = false;
@@ -391,7 +399,7 @@ void I2C::masterRead (uint16_t slaveAddr, uint16_t regAddr, uint8_t* buff, uint8
 	CR1AckCfg = READ_BIT(i2cType->CR1, I2C_CR1_ACK);
 	tmp = buff;
 	i=2;
-	delay();
+	delay_us(10);
 	while ( dataSize>0 && !isMasterEmergencyStop ) {
 	    if( !(i < dataSize) && !(NACKisSet) ) {
 		//sending NACK with the last byte
