@@ -362,7 +362,7 @@ bool I2C::isSlaveRead () {
 	return ( !IS_BIT_SET(i2cType->SR2, I2C_SR2_MSL) && !IS_BIT_SET(i2cType->SR2, I2C_SR2_TRA) ) ? true : false;
 }
 
-void I2C::masterWrite (uint16_t slaveAddr, uint16_t regAddr, uint8_t* buff, uint8_t dataSize) {
+void I2C::masterWrite (uint16_t slaveAddr, uint16_t regAddr, uint8_t* buff, uint8_t dataSize = 1) {
 	uint8_t i;
 	uint8_t* tmp;
 
@@ -377,7 +377,7 @@ void I2C::masterWrite (uint16_t slaveAddr, uint16_t regAddr, uint8_t* buff, uint
 	stop();
 }
 
-void I2C::masterWrite (uint16_t slaveAddr, uint8_t* buff, uint8_t dataSize) {
+void I2C::masterWrite (uint16_t slaveAddr, uint8_t* buff, uint8_t dataSize = 1) {
 	masterWrite(slaveAddr, 0xffff, buff, dataSize);}
 
 void I2C::masterWriteControlled (uint16_t slaveAddr, uint8_t* buff) {
@@ -389,7 +389,11 @@ void I2C::masterWriteControlled (uint16_t slaveAddr, uint8_t* buff) {
     };
 }
 
+<<<<<<< HEAD
+void I2C::masterRead (uint16_t slaveAddr, uint16_t regAddr, uint8_t* buff, uint8_t dataSize = 1) {
+=======
 void I2C::masterRead (uint16_t slaveAddr, uint16_t regAddr, uint8_t* buff, uint8_t dataSize) {
+>>>>>>> be2ab8156cc74250f34526f758a2ca4b44fa4ea3
 	bool NACKisSet = false;
 	uint16_t CR1AckCfg;
 	uint8_t i;
@@ -414,7 +418,7 @@ void I2C::masterRead (uint16_t slaveAddr, uint16_t regAddr, uint8_t* buff, uint8
 	SET_BIT(i2cType->CR1, CR1AckCfg);
 }
 
-void I2C::masterRead (uint16_t slaveAddr, uint8_t* buff, uint8_t dataSize) {
+void I2C::masterRead (uint16_t slaveAddr, uint8_t* buff, uint8_t dataSize = 1) {
     masterRead (slaveAddr, 0xffff, buff, dataSize);
 }
 

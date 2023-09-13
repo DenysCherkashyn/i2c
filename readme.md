@@ -101,7 +101,7 @@ true - emergency stop was happened;
 false - emergency stop wasn't happened;
 	
 /****************************************************************************/
-masterWrite (uint16_t slaveAddr, uint16_t regAddr, uint8_t* buff, uint8_t dataSize)
+masterWrite (uint16_t slaveAddr, uint16_t regAddr, uint8_t* buff, uint8_t dataSize = 1)
 -----------------------------------------------------------------------------
 - sets i2c-connection in master write mode. Sets connection with slave device on slaveAddr-address
 and writes datasize bytes data from buff to regAddr register of slave device.
@@ -116,7 +116,7 @@ uint8_t dataSize - size of data to write
 Return: void
 	
 /****************************************************************************/
-masterWrite (uint16_t slaveAddr, uint8_t* buff, uint8_t dataSize)
+masterWrite (uint16_t slaveAddr, uint8_t* buff, uint8_t dataSize = 1)
 -----------------------------------------------------------------------------
 - sets i2c-connection in master write mode. Sets connection with slave device on slaveAddr-address
 and writes datasize bytes data from buff to slave device (without regAddr register address transfering).
@@ -142,7 +142,11 @@ uint8_t* buff - data source pointer	(size of 1 byte)
 Return: void
 	
 /****************************************************************************/
+<<<<<<< HEAD
+masterRead (uint16_t slaveAddr, uint16_t regAddr, uint8_t* buff, uint8_t dataSize = 1)
+=======
 masterRead (uint16_t slaveAddr, uint16_t regAddr, uint8_t* buff, uint8_t dataSize)
+>>>>>>> be2ab8156cc74250f34526f758a2ca4b44fa4ea3
 -----------------------------------------------------------------------------
 - sets i2c-connection in master read mode. Sets connection with slave device on slaveAddr-address
 and reads datasize bytes data to buff from regAddr register of slave device.
@@ -157,7 +161,7 @@ uint8_t dataSize - size of data to read
 Return: void
 	
 /****************************************************************************/
-masterRead (uint16_t slaveAddr, uint8_t* buff, uint8_t dataSize)
+masterRead (uint16_t slaveAddr, uint8_t* buff, uint8_t dataSize = 1)
 -----------------------------------------------------------------------------
 - sets i2c-connection in master read mode. Sets connection with slave device on slaveAddr-address
 and reads datasize bytes data to buff from slave device(without regAddr register address transfering).
