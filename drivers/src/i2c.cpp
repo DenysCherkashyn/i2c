@@ -389,11 +389,7 @@ void I2C::masterWriteControlled (uint16_t slaveAddr, uint8_t* buff) {
     };
 }
 
-<<<<<<< HEAD
 void I2C::masterRead (uint16_t slaveAddr, uint16_t regAddr, uint8_t* buff, uint8_t dataSize = 1) {
-=======
-void I2C::masterRead (uint16_t slaveAddr, uint16_t regAddr, uint8_t* buff, uint8_t dataSize) {
->>>>>>> be2ab8156cc74250f34526f758a2ca4b44fa4ea3
 	bool NACKisSet = false;
 	uint16_t CR1AckCfg;
 	uint8_t i;
